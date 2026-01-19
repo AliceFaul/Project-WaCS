@@ -6,12 +6,3 @@ public interface IState
     void TickState();
     void ExitState() => Debug.Log("State Exited");
 }
-
-public enum PlayerState
-{
-    Idle,
-    Move,
-    Interact,
-    BuildMode,
-    Disable
-}
