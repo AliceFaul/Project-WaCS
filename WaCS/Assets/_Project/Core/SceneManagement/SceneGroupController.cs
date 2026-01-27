@@ -14,7 +14,7 @@ namespace _Project.Core.SceneManagement
         public event Action OnSceneGroupLoaded = delegate { };
 
         private SceneGroup _sceneGroup;
-        
+
         // NOTE: hàm load scene theo sceneGroup
         public async Task LoadScenes(SceneGroup group, IProgress<float> progress, bool reloadDupScenes = false)
         {
