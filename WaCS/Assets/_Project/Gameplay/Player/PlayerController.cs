@@ -6,10 +6,13 @@ namespace _Project.Gameplay.Player
     {
         public PlayerContext Context { get; private set; }
         
+        [SerializeField] private PlayerInteraction interaction;
+        
         private void Awake()
         {
             Context = new PlayerContext(this);
             Context.StateMachine.ChangeState(new  PlayerIdleState(this));
+            interaction.Init(Context);
         }
 
         private void Update()

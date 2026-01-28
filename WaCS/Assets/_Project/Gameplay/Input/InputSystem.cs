@@ -25,7 +25,7 @@ namespace _Project.Gameplay.Input
             _actions.Player.Look.performed += ctx => Look = ctx.ReadValue<Vector2>();
             _actions.Player.Look.canceled += _ => Look = Vector2.zero;
             
-            _actions.Player.Interact.performed += _ => Interact = true;
+            _actions.Player.Interact.performed += ctx => Interact = true;
         }
 
         private void OnDisable()
