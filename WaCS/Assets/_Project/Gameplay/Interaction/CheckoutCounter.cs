@@ -6,8 +6,6 @@ namespace _Project.Gameplay.Interaction
 {
     public class CheckoutCounter : MonoBehaviour, IInteractable
     {
-        [SerializeField] private CheckoutController checkoutController;
-        
         public void Interact(PlayerContext context)
         {
             
