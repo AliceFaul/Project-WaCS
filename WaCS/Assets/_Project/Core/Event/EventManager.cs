@@ -12,6 +12,7 @@ namespace _Project.Core.Event
         
         public async Task<bool> InitAsync()
         {
+            _eventListeners.Clear();
             await Task.CompletedTask;
             return true;
         }

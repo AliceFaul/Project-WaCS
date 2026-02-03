@@ -1265,7 +1265,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Gameplay.Player.PlayerInteraction
   camera: {fileID: 330585545}
-  interactionRange: 2
+  interactionRange: 5
   interactionLayer:
     serializedVersion: 2
     m_Bits: 64

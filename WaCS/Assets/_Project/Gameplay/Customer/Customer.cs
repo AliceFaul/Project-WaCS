@@ -2,10 +2,8 @@
 
 namespace _Project.Gameplay.Customer
 {
-    public class Customer
+    public class Customer : MonoBehaviour
     {
-        public Cart Cart { get; set; }
-
         public void OnCheckoutCompleted()
         {
             // TODO: Add event
