@@ -28,7 +28,7 @@ namespace _Project.Core.SceneManagement
         {
             var eventManager = EventManager.Instance;
             Register(eventManager);
-            var checkoutSystem = new CheckoutSystem();
+            var checkoutSystem = new CheckoutSystem(eventManager);
             Register(checkoutSystem);
         }
 

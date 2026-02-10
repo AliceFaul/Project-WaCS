@@ -1,4 +1,4 @@
-﻿using _Project.Gameplay.Customer;
+﻿using System.Collections.Generic;
 
 namespace _Project.Systems.Game
 {
@@ -15,55 +15,59 @@ namespace _Project.Systems.Game
 
     public class CheckoutSession
     {
-        public Customer Customer { get; }
+        private readonly List<ItemData> _items = new();
+
+        public string CustomerId { get; }
         public CheckoutState State { get; private set; }
 
-        public float TotalPrice { get; private set; }
-        public float Paid { get; private set; }
-        public float Change => Paid - TotalPrice;
+        public decimal TotalPrice { get; private set; }
+        public decimal Paid { get; private set; }
+        public decimal GetChange()
+        {
+            return Paid >= TotalPrice ? Paid - TotalPrice : 0;
+        }
 
+        public IReadOnlyList<ItemData> Items { get { return _items; } }
 
         // Constructor của một Session
-        public CheckoutSession(Customer customer)
+        public CheckoutSession(string customerId)
         {
-            Customer = customer;
+            CustomerId = customerId;
             State = CheckoutState.Scanning;
-            Paid = 0f;
-            TotalPrice = 0f;
         }
         
-        // hoàn tất scan item và bắt đầu tính tiền
-        public void ScanCompleted()
+        public bool TryAddItem(ItemData item)
         {
-            if (State != CheckoutState.Scanning) return;
+            if(State != CheckoutState.Scanning) return false;
+            _items.Add(item);
+            TotalPrice += (decimal)item.Price;
+            return true;
+        }
+
+        public bool TryFinishScan()
+        {
+            if(State != CheckoutState.Scanning) return false;
             State = CheckoutState.WaitingForPayment;
-        }
-        
-        public void CompleteSession() => State = CheckoutState.Completed;
-        
-        public void FailSession() => State = CheckoutState.Failed;
-        
-        // nhận tiền từ customer
-        public void Pay(float amount)
-        {
-            if(State != CheckoutState.WaitingForPayment) return;
-            Paid += amount;
+            return true;
         }
 
-        // scan item và cập nhật tổng tiền thanh toán
-        public void Scan(float price)
+        public bool TryPay(decimal money)
         {
-            if (State != CheckoutState.Scanning) return;
-            TotalPrice += price;
+            if(State != CheckoutState.WaitingForPayment) return false;
+            Paid += money;
+            return true;
         }
 
-        public bool IsPaymentEnough() => Paid >= TotalPrice;
-
-        public bool GiveChange(float amount)
+        public bool TryComplete(out CheckoutResult result)
         {
-            if(State != CheckoutState.WaitingForChange) return false;
-            if(amount < Change) return false;
+            result = default;
+            if(State != CheckoutState.WaitingForPayment)
+                return false;
+            if(Paid < TotalPrice)
+                return false;
+
             State = CheckoutState.Completed;
+            result = new CheckoutResult(this);
             return true;
         }
     }
