@@ -30,6 +30,8 @@ namespace _Project.Core.SceneManagement
             Register(eventManager);
             var checkoutSystem = new CheckoutSystem(eventManager);
             Register(checkoutSystem);
+            var economySystem = new EconomySystem(eventManager);
+            Register(economySystem);
         }
 
         private async Task InitManager()

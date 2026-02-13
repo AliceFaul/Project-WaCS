@@ -1,17 +1,16 @@
-﻿using UnityEngine;
+﻿using _Project.Systems.Game;
+using UnityEngine;
 
 namespace _Project.Gameplay.Customer
 {
     public class Customer : MonoBehaviour
     {
-        public void OnCheckoutCompleted()
-        {
-            // TODO: Add event
-        }
+        [Header("Reference")]
+        [SerializeField] private CustomerMovement movement;
 
-        public void OnCheckoutFailed()
-        {
-            // TODO: Add event
-        }
+        private QueueSystem _queueSystem;
+        private CheckoutSystem _checkoutSystem;
+
+
     }
 }
