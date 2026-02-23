@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using _Project.Core.Event;
+using UnityEngine;
 
 namespace _Project.Systems.Game
 {
@@ -103,9 +104,21 @@ namespace _Project.Systems.Game
         private CheckoutSession _currentSession;
         private readonly EventManager _eventManager;
 
+        private Transform _checkoutPosition;
+
         public CheckoutSystem(EventManager eventManager)
         {
             _eventManager = eventManager;
+        }
+
+        public void RegisterCheckoutPosition(Transform position)
+        {
+            _checkoutPosition = position;
+        }
+
+        public Vector3 GetCheckoutPosition()
+        {
+            return _checkoutPosition != null ? _checkoutPosition.position : Vector3.zero;
         }
 
         public async Task<bool> InitAsync()
