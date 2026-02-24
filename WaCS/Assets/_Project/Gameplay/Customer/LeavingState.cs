@@ -28,7 +28,7 @@ namespace _Project.Gameplay.Customer
             // Check if the customer has reached the exit point, if so, destroy the customer game object
             if (_customer.Movement.HasReachDestination)
             {
-                Object.Destroy(_customer.gameObject);
+                _customer.RequestDespawned();
             }
         }
     }

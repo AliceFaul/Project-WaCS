@@ -1,9 +1,10 @@
-﻿using _Project.Systems.Game;
+﻿using System;
+using _Project.Systems.Game;
 using UnityEngine;
 
 namespace _Project.Gameplay.Customer
 {
-    public class Customer : MonoBehaviour
+    public class Customer : MonoBehaviour, IPoolable
     {
         [Header("Reference")]
         [SerializeField] private CustomerMovement movement;
@@ -11,6 +12,7 @@ namespace _Project.Gameplay.Customer
         [SerializeField] private Transform[] shoppingPoints;
         [SerializeField] private float shoppingDuration = 5f;
 
+        // TODO: consider to use event system to decouple the dependency between customer and queue/checkout system
         private QueueSystem _queueSystem;
         private CheckoutSystem _checkoutSystem;
 
@@ -19,6 +21,7 @@ namespace _Project.Gameplay.Customer
 
         public CustomerMovement Movement => movement;
         public Transform[] ShoppingPoints => shoppingPoints;
+        public event Action<Customer> OnCustomerDespawned;
 
         public void Init(QueueSystem queueSystem, CheckoutSystem checkoutSystem)
         {
@@ -59,6 +62,25 @@ namespace _Project.Gameplay.Customer
             _isInQueue = false;
             _queueSystem.RemoveCustomer(this);
             EnterLeavingState();
+        }
+
+        public void OnSpawned()
+        {
+            // Reset any necessary state or variables when the customer is spawned from the pool
+            _isInQueue = false;
+            _stateMachine = new CustomerStateMachine();
+        }
+
+        public void OnDespawned()
+        {
+            // Clean up any state or variables when the customer is returned to the pool
+            if (_isInQueue)
+            {
+                _queueSystem.RemoveCustomer(this);
+                _isInQueue = false;
+                movement.Stop();
+            }
+            _stateMachine = null;
         }
 
         private void SubscribeQueueEvent()
@@ -127,6 +149,11 @@ namespace _Project.Gameplay.Customer
             _isInQueue = false;
             EnterLeavingState();
         }
+
+        public void RequestDespawned()
+        {
+            OnCustomerDespawned?.Invoke(this);
+        }
         #endregion
 
         #region Utilities
@@ -145,7 +172,7 @@ namespace _Project.Gameplay.Customer
         {
             if(shoppingPoints == null || shoppingPoints.Length == 0)
                 return transform.position;
-            int index = Random.Range(0, shoppingPoints.Length);
+            int index = UnityEngine.Random.Range(0, shoppingPoints.Length);
             return shoppingPoints[index].position;
         }
 
