@@ -30,6 +30,7 @@ namespace _Project.Gameplay.Customer
             var customer = _poolManager.Get<Customer>();
             customer.transform.position = transform.position;
             customer.Init(_queueSystem, _checkoutSystem);
+            customer.SetExitPoint(transform.position);
             customer.OnCustomerDespawned += HandleCustomerDespawned;
         }
 

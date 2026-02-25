@@ -19,6 +19,7 @@ namespace _Project.Gameplay.Customer
 
         private CustomerStateMachine _stateMachine;
         private bool _isInQueue;
+        private Vector3 _exitPoint;
         private CustomerCart _customerCart;
 
         public CustomerMovement Movement => movement;
@@ -106,6 +107,11 @@ namespace _Project.Gameplay.Customer
             }
         }
 
+        public void SetExitPoint(Vector3 exitPoint)
+        {
+            _exitPoint = exitPoint;
+        }
+
         #region Customer State Handler
         private void EnterWaitingState()
         {
@@ -182,7 +188,7 @@ namespace _Project.Gameplay.Customer
         public Vector3 GetExitPosition()
         {
             // Return the position where the customer should move to when leaving
-            return Vector3.zero; // Placeholder, replace with actual exit position
+            return _exitPoint; // Placeholder, replace with actual exit position
         }
 
         // TODO: enum reason define why customer leave (queue full, no shopping point, etc.)
