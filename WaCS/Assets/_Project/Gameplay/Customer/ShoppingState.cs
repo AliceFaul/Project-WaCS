@@ -1,3 +1,4 @@
+using _Project.Systems.Game;
 using UnityEngine;
 
 namespace _Project.Gameplay.Customer
@@ -11,6 +12,7 @@ namespace _Project.Gameplay.Customer
     public class ShoppingState : ICustomerState
     {
         private Customer _customer;
+        private Transform _currentShelf;
 
         private float _totalShoppingTime;
         private float _shoppingTimer;
@@ -23,10 +25,14 @@ namespace _Project.Gameplay.Customer
 
         private ShoppingPhase _phase;
 
+        // TODO: This should be generated based on the customer's shopping list and the shelves they visit
+        private CustomerCart _cart;
+
         public ShoppingState(Customer customer, float totalShoppingTime)
         {
             _customer = customer;
             _totalShoppingTime = totalShoppingTime;
+            _cart = _customer.CustomerCart;
         }
 
         public void EnterState()
@@ -78,9 +84,44 @@ namespace _Project.Gameplay.Customer
 
         private void GoToNextShelf()
         {
-            Vector3 shelf = _customer.GetRandomShoppingPoint();
-            _customer.Movement.MoveTo(shelf);
+            _currentShelf = _customer.GetRandomShoppingPoint();
+            _customer.Movement.MoveTo(_currentShelf.position);
             _phase = ShoppingPhase.MoveToShelf;
+        }
+
+        private void TakeItemFromShelf()
+        {
+            var closestShelf = GetClosestShelf();
+            if(closestShelf == null) return;
+            var shelf = closestShelf.GetComponent<Shelf>();
+            if(shelf == null) return;
+
+            if(shelf.GetAnyItem(out var item))
+            {
+                _cart.Add(item);
+                Debug.Log("Customer added " + item.DisplayName + " to cart");
+            }
+            else
+            {
+                Debug.Log("Customer found no items on shelf");
+            }
+        }
+
+        private Transform GetClosestShelf()
+        {
+            Transform closestShelf = null;
+            float closestDistance = Mathf.Infinity;
+            Vector3 currentPosition = _customer.transform.position;
+            foreach (var shelf in _customer.ShoppingPoints)
+            {
+                float distance = Vector3.Distance(currentPosition, shelf.position);
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestShelf = shelf;
+                }
+            }
+            return closestShelf;
         }
 
         // Phase: Browsing
@@ -96,6 +137,7 @@ namespace _Project.Gameplay.Customer
             _browseTimer += Time.deltaTime;
             if (_browseTimer >= _currentBrowseTime)
             {
+                TakeItemFromShelf();
                 _shelvesVisited++;
                 if (_shelvesVisited >= _shelvesToVisit)
                 {

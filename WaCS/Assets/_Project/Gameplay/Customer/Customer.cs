@@ -1,6 +1,7 @@
 ﻿using System;
 using _Project.Systems.Game;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace _Project.Gameplay.Customer
 {
@@ -18,8 +19,11 @@ namespace _Project.Gameplay.Customer
 
         private CustomerStateMachine _stateMachine;
         private bool _isInQueue;
+        private CustomerCart _customerCart;
 
         public CustomerMovement Movement => movement;
+        public CustomerCart CustomerCart => _customerCart;
+
         public Transform[] ShoppingPoints => shoppingPoints;
         public event Action<Customer> OnCustomerDespawned;
 
@@ -27,7 +31,7 @@ namespace _Project.Gameplay.Customer
         {
             _queueSystem = queueSystem;
             _checkoutSystem = checkoutSystem;
-            _stateMachine = new CustomerStateMachine();
+            _customerCart = new CustomerCart();
             SubscribeQueueEvent();
 
             EnterShoppingState();
@@ -73,9 +77,18 @@ namespace _Project.Gameplay.Customer
 
         public void OnDespawned()
         {
+            // Unsubscribe from any events to prevent memory leaks or
+            // unintended behavior when the customer is returned to the pool
+            if (_queueSystem != null)
+            {
+                _queueSystem.OnCustomerPositionUpdated -= HandleQueuePositionChanged;
+                _queueSystem.OnCustomerOnFront -= HandleReachedFront;
+                _queueSystem.OnCustomerDequeued -= HandleDequeued;
+            }
             // Clean up any state or variables when the customer is returned to the pool
             if (_isInQueue)
             {
+                _customerCart?.Clear();
                 _queueSystem.RemoveCustomer(this);
                 _isInQueue = false;
                 movement.Stop();
@@ -90,16 +103,6 @@ namespace _Project.Gameplay.Customer
                 _queueSystem.OnCustomerPositionUpdated += HandleQueuePositionChanged;
                 _queueSystem.OnCustomerOnFront += HandleReachedFront;
                 _queueSystem.OnCustomerDequeued += HandleDequeued;
-            }
-        }
-
-        private void OnDestroy()
-        {
-            if(_queueSystem != null)
-            {
-                _queueSystem.OnCustomerPositionUpdated -= HandleQueuePositionChanged;
-                _queueSystem.OnCustomerOnFront -= HandleReachedFront;
-                _queueSystem.OnCustomerDequeued -= HandleDequeued;
             }
         }
 
@@ -168,12 +171,12 @@ namespace _Project.Gameplay.Customer
             EnterPayingState();
         }
 
-        public Vector3 GetRandomShoppingPoint()
+        public Transform GetRandomShoppingPoint()
         {
             if(shoppingPoints == null || shoppingPoints.Length == 0)
-                return transform.position;
+                return transform;
             int index = UnityEngine.Random.Range(0, shoppingPoints.Length);
-            return shoppingPoints[index].position;
+            return shoppingPoints[index];
         }
 
         public Vector3 GetExitPosition()

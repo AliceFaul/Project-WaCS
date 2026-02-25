@@ -4,16 +4,16 @@ public class ShopCloseState : IGameState
 {
     public void Enter()
     {
-        throw new System.NotImplementedException();
+        // TODO: Add animation and sound effect for closing the shop
     }
 
     public void Exit()
     {
-        throw new System.NotImplementedException();
+        // No specific exit actions needed for closing the shop
     }
 
     public void Update()
     {
-        throw new System.NotImplementedException();
+        // No specific update actions needed for closing the shop
     }
 }

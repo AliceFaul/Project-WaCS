@@ -1,4 +1,5 @@
 using _Project.Gameplay.Customer;
+using _Project.Systems.Game;
 using UnityEngine;
 
 public class ShopOpenState : IGameState
@@ -7,9 +8,11 @@ public class ShopOpenState : IGameState
     private float _timer;
     private float _spawnInterval = 10f;
 
-    public ShopOpenState(CustomerSpawner customerSpawner)
+    public ShopOpenState(CustomerSpawner customerSpawner, QueueSystem queueSystem, CheckoutSystem checkoutSystem)
     {
         _customerSpawner = customerSpawner;
+        // Initialize the customer spawner with necessary systems
+        _customerSpawner.Init(queueSystem, checkoutSystem, initialSize: 20);
     }
 
     public void Enter()
