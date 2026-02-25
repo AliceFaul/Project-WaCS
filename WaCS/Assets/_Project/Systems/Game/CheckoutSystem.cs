@@ -144,7 +144,7 @@ namespace _Project.Systems.Game
 
             var total = _currentSession.TotalPrice;
             var count = _currentSession.Items.Count;
-            _eventManager.Publish(new CheckoutItemScanned(item.ItemID, (decimal)item.Price, total, count));
+            _eventManager.Publish(new CheckoutItemScanned(item.ItemID, (decimal)item.SellPrice, total, count));
             return true;
         }
 

@@ -40,7 +40,7 @@ namespace _Project.Systems.Game
         {
             if(State != CheckoutState.Scanning) return false;
             _items.Add(item);
-            TotalPrice += (decimal)item.Price;
+            TotalPrice += (decimal)item.SellPrice;
             return true;
         }
 

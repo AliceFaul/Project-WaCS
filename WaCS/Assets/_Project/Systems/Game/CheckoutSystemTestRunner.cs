@@ -82,7 +82,7 @@ public class CheckoutSystemTestRunner : MonoBehaviour
         var item = ScriptableObject.CreateInstance<ItemData>();
         item.ItemID = id;
         item.DisplayName = name;
-        item.Price = price;
+        item.SellPrice = price;
         return item;
     }
 }
