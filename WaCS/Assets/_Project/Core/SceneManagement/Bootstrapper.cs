@@ -22,11 +22,13 @@ namespace _Project.Core.SceneManagement
             }
 
             _isInitialized = true;
+            DontDestroyOnLoad(this.gameObject);
 
             try
             {
                 RegisterManager();
                 await InitManager();
+                await SceneLoader.Instance.LoadSceneGroup(0);
             }
             catch(Exception e)
             {

@@ -6,8 +6,10 @@ using _Project.Core.Singleton;
 
 namespace _Project.Core.SceneManagement
 {
-    public class SceneLoader : PersistentSingleton<SceneLoader>
+    public class SceneLoader : MonoBehaviour
     {
+        public static SceneLoader Instance { get; private set; }
+
         [SerializeField] private Image loadingBar;
         [SerializeField] private Canvas loadingCanvas;
         [SerializeField] private CanvasGroup loadingCanvasGroup;
@@ -20,6 +22,12 @@ namespace _Project.Core.SceneManagement
         private bool _isLoading;
         
         private readonly SceneGroupController _sceneGroupController =  new SceneGroupController();
+
+        private void Awake()
+        {
+            if(Instance == null) Instance = this;
+            else Destroy(gameObject);
+        }
 
         private void Start()
         {
