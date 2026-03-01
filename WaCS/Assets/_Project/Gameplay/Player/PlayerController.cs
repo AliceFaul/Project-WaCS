@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 
 namespace _Project.Gameplay.Player
 {
@@ -7,10 +8,13 @@ namespace _Project.Gameplay.Player
         public PlayerContext Context { get; private set; }
         
         [SerializeField] private PlayerInteraction interaction;
-        
+
+        public static event Action<PlayerContext> OnContextInitialized;
+
         private void Awake()
         {
             Context = new PlayerContext(this);
+            OnContextInitialized?.Invoke(Context);
             Context.StateMachine.ChangeState(new  PlayerIdleState(this));
             interaction.Init(Context);
         }

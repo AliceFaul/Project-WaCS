@@ -1,7 +1,6 @@
 ﻿using System;
 using _Project.Systems.Game;
 using UnityEngine;
-using System.Collections.Generic;
 
 namespace _Project.Gameplay.Customer
 {

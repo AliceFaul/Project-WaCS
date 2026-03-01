@@ -10,9 +10,19 @@ namespace _Project.Core.SceneManagement
     public class Bootstrapper : MonoBehaviour
     {
         private readonly List<IManager> _managers = new List<IManager>();
+        private static bool _isInitialized = false;
 
         private async void Awake()
         {
+            if(_isInitialized)
+            {
+                Debug.LogWarning("[Bootstrapper] already initialized, skipping...");
+                Destroy(gameObject);
+                return;
+            }
+
+            _isInitialized = true;
+
             try
             {
                 RegisterManager();
