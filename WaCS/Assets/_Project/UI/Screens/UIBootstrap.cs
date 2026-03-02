@@ -8,20 +8,23 @@ namespace _Project.UI.Screens
         [SerializeField] private InventoryUI inventoryUI;
         [SerializeField] private HotbarUI hotbarUI;
 
-        private void OnEnable()
+        private void Start()
         {
-            PlayerController.OnContextInitialized += InitializeUI;
+            InitializeUI();
         }
 
-        private void OnDestroy()
+        private void InitializeUI()
         {
-            PlayerController.OnContextInitialized -= InitializeUI;
-        }
-
-        private void InitializeUI(PlayerContext context)
-        {
+            var context = ServiceRegistry.Get<PlayerContext>();
+            if(context == null)
+            {
+                Debug.LogError("PlayerContext not found in ServiceRegistry. Ensure PlayerController is initialized before UIBootstrap.");
+                return;
+            }
             inventoryUI.Init(context.Inventory);
+            inventoryUI.BindInput(PlayerController.Instance);
             hotbarUI.Init(context.Hotbar);
+            Debug.Log("UI initialized successfully.");
         }
     }
 }

@@ -47,7 +47,7 @@ namespace _Project.UI.Screens
                 var slot = Instantiate(slotPrefab, hotbarContent);
                 _slotUIs.Add(slot);
                 
-                var numberText = slot.transform.Find("Number").GetComponent<TMP_Text>();
+                var numberText = slot.transform.GetComponentInChildren<TMP_Text>();
                 numberText.text = (i + 1).ToString();
             }
         }
@@ -80,7 +80,6 @@ namespace _Project.UI.Screens
                 var highlight = _slotUIs[i].
                     transform.Find("Highlight").GetComponent<Image>();
                 highlight.enabled = (i == index);
-                highlight.color = (i == index) ? Color.yellow : new Color(1, 1, 0, 0.5f);
             }
         }
     }

@@ -1,4 +1,5 @@
 ﻿using _Project.Gameplay.Player;
+using Project.Systems.Game;
 using UnityEngine;
 
 public class MouseLook : MonoBehaviour
@@ -53,6 +54,9 @@ public class MouseLook : MonoBehaviour
 
     void Update()
     {
+        if(PauseSystem.IsPaused)
+            return;
+
         // Allow the script to clamp based on a desired target value.
         var targetOrientation = Quaternion.Euler(targetDirection);
         var targetCharacterOrientation = Quaternion.Euler(targetCharacterDirection);

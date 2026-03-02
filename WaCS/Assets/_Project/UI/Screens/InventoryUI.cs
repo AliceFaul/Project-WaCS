@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using UnityEngine.UI;
 using TMPro;
+using Project.Systems.Game;
 
 namespace _Project.UI.Screens
 {
@@ -17,15 +18,29 @@ namespace _Project.UI.Screens
         public void Init(Inventory inventory)
         {
             _inventory = inventory;
+            transform.gameObject.SetActive(false);
             CreateSlots();
             UpdateUI(_inventory.Slots);
             _inventory.OnInventoryChanged += UpdateUI;
+        }
+
+        public void BindInput(PlayerController controller)
+        {
+            controller.OnInventoryToggled += ToggleInventory;
         }
 
         private void OnDestroy()
         {
             if(_inventory != null)
                 _inventory.OnInventoryChanged -= UpdateUI;
+        }
+
+        public void ToggleInventory(bool isOpen)
+        {
+            transform.gameObject.SetActive(isOpen);
+            PauseSystem.PauseGame(isOpen);
+            Cursor.lockState = isOpen ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = isOpen;
         }
 
         // Creates UI slots based on the inventory's slot count
