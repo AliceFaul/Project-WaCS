@@ -4,30 +4,17 @@ using System.Collections.Generic;
 
 namespace _Project.Gameplay.Player
 {
-    public class EquipmentItem
-    {
-        public string Name { get; }
-        public Sprite Icon { get; }
-        public Action OnUse { get; }
-        public EquipmentItem(string name, Sprite icon, Action onUse)
-        {
-            Name = name;
-            Icon = icon;
-            OnUse = onUse;
-        }
-    }
-
     public class HotbarSlot
     {
-        public EquipmentItem Item { get; private set; }
-        public bool IsEmpty => Item == null;
-        public void SetItem(EquipmentItem item)
+        public InventorySlot LinkedSlot { get; private set; }
+        public bool IsEmpty => LinkedSlot == null || LinkedSlot.IsEmpty;
+        public void SetItem(InventorySlot item)
         {
-            Item = item;
+            LinkedSlot = item;
         }
         public void Clear()
         {
-            Item = null;
+            LinkedSlot = null;
         }
     }
 
@@ -57,7 +44,7 @@ namespace _Project.Gameplay.Player
         }
 
         // SLOT MANAGEMENT
-        public void SetItem(int slotIndex, EquipmentItem item)
+        public void SetItem(int slotIndex, InventorySlot item)
         {
             if(!IsValidIndex(slotIndex))
             {
@@ -125,21 +112,22 @@ namespace _Project.Gameplay.Player
                 SelectSlot(input.HotbarNumberPressed);
         }
 
-        // USE ITEM
-        public void UseSelectedItem()
-        {
-            var slot = SelectedSlot;
-            if(slot == null || slot.IsEmpty)
-            {
-                Debug.LogWarning("No item in selected hotbar slot");
-                return;
-            }
-            slot.Item.OnUse?.Invoke();
-        }
-
+        // HELPERS
         private bool IsValidIndex(int index)
         {
             return index >= 0 && index < _slots.Count;
+        }
+
+        public ItemData GetEquippedItem()
+        {
+            var slot = SelectedSlot;
+            return slot != null && !slot.IsEmpty ? slot.LinkedSlot.Item : null;
+        }
+
+        public bool HasEquippedItem()
+        {
+            var slot = SelectedSlot;
+            return slot != null && !slot.IsEmpty;
         }
     }
 }

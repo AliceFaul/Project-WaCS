@@ -67,7 +67,7 @@ namespace _Project.UI.Screens
                 }
                 else
                 {
-                    itemIcon.sprite = slot.Item.Icon;
+                    itemIcon.sprite = slot.LinkedSlot.Item.Icon;
                     itemIcon.enabled = true;
                 }
             }

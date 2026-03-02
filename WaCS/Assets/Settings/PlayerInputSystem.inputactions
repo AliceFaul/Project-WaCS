@@ -34,6 +34,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "SecondaryInteract",
+                    "type": "Button",
+                    "id": "5332f8f2-39b3-43b5-ae3e-b80854b02a67",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Escape",
                     "type": "Button",
                     "id": "e982c650-87cb-4fda-976b-d1866a1f3b06",
@@ -391,6 +400,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "HotbarPrev",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "3c032866-5730-4c31-8748-4d88c4c69e1e",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "SecondaryInteract",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -9,6 +9,7 @@ namespace _Project.Gameplay.Input
         public Vector2 Move  { get; set; }
         public Vector2 Look { get; set; }
         public bool Interact { get; private set; }
+        public bool SecondaryInteract { get; private set; }
         public bool Inventory { get; private set; }
         public bool Escape { get; private set; }
 
@@ -33,6 +34,7 @@ namespace _Project.Gameplay.Input
             _actions.Player.Look.canceled += _ => Look = Vector2.zero;
             
             _actions.Player.Interact.performed += ctx => Interact = true;
+            _actions.Player.SecondaryInteract.performed += ctx => SecondaryInteract = true;
 
             _actions.Player.Inventory.performed += ctx => Inventory = true;
 
@@ -62,6 +64,7 @@ namespace _Project.Gameplay.Input
         {
             // Reset one-time actions after they've been processed
             Interact = false;
+            SecondaryInteract = false;
             Inventory = false;
             Escape = false;
 
