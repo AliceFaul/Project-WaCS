@@ -13,7 +13,7 @@
 
         public void Update()
         {
-            _currentState?.Tick();
+            _currentState?.Update();
         }
     }
 }
