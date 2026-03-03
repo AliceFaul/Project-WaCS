@@ -6,15 +6,19 @@ namespace _Project.Systems.Game
     public class ShelfPoint : MonoBehaviour
     {
         [SerializeField] private int capacity = 12;
-        [SerializeField] private List<Transform> anchors = new();
+        [SerializeField] private float spacingX = 0.5f;
+        [SerializeField] private float spacingZ = 0.5f;
+        [SerializeField] private float itemPerRow = 6;
+        [SerializeField] private Transform itemHolder;
         [SerializeField] private Transform customerStandPoint;
 
-        [SerializeField] private ItemData itemType;
-        [SerializeField] private int quantity;
-        [SerializeField] private float price;
+        private ItemData itemType;
+        private int quantity;
+        private float price;
 
         private readonly List<GameObject> _spawnedItems = new();
 
+        // Properties to access the shelf point's state
         public ItemData ItemType => itemType;
         public int Quantity => quantity;
         public float Price => price;
@@ -24,19 +28,6 @@ namespace _Project.Systems.Game
         public bool HasItems => itemType != null;
 
         public Transform CustomerStandPoint => customerStandPoint;
-
-        private void Awake()
-        {
-            // If no anchors are assigned in the inspector,
-            // automatically populate the list with child transforms
-            if (anchors == null || anchors.Count == 0)
-            {
-                foreach (Transform child in transform)
-                {
-                    anchors.Add(child);
-                }
-            }
-        }
 
         public void Init(ItemData itemType)
         {
@@ -67,17 +58,23 @@ namespace _Project.Systems.Game
                 Debug.LogWarning("Cannot add item to shelf point: shelf is full");
                 return;
             }
-            if(quantity >= anchors.Count)
-            {
-                Debug.LogWarning("Not enough anchors to display all items on the shelf");
-                return;
-            }
 
-            Transform anchor = anchors[quantity];
             GameObject itemObj = 
-                Instantiate(itemType.Prefab, anchor.position, anchor.rotation, transform);
+                Instantiate(itemType.Prefab, itemHolder);
             _spawnedItems.Add(itemObj);
+            AutoArranged();
             quantity++;
+        }
+
+        private void AutoArranged()
+        {
+            for (int i = 0; i < _spawnedItems.Count; i++)
+            {
+                int row = i / (int)itemPerRow;
+                int col = i % (int)itemPerRow;
+                Vector3 offset = new Vector3(col * spacingX, 0f, row * spacingZ);
+                _spawnedItems[i].transform.localPosition = offset;
+            }
         }
 
         // Removes one item from the shelf point.
