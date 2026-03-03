@@ -34,7 +34,10 @@ namespace _Project.UI.Screens
             priceTable.SetActive(true);
             itemNameText.text = $"Enter price for {point.ItemType.DisplayName}";
             priceInput.text = point.Price.ToString("0.00");
+            
             PauseSystem.PauseGame(true);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = true;
         }
 
         public void Confirm()
@@ -56,7 +59,10 @@ namespace _Project.UI.Screens
         {
             priceTable.SetActive(false);
             _currentPoint = null;
+                        
             PauseSystem.PauseGame(false);
+            Cursor.lockState = CursorLockMode.None;
+            Cursor.visible = false;
         }
     }
 }

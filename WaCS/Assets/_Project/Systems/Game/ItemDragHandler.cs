@@ -1,23 +1,33 @@
 using UnityEngine;
-using UnityEngine.EventSystems;
+using UnityEngine.UI;
+using _Project.UI.Screens;
 
 namespace _Project.Systems.Game
 {
-    public class ItemDragHandler : MonoBehaviour, IDragHandler, IBeginDragHandler, IEndDragHandler
+    public class ItemDragHandler : MonoBehaviour
     {
-        public void OnBeginDrag(PointerEventData eventData)
+        public static ItemDragHandler Instance { get; private set; }
+
+        [SerializeField] private Image dragIcon;
+        [SerializeField] private CanvasGroup dragCanvasGroup;
+
+        private InventorySlotUI inventorySlot;
+        private ItemData draggedItem;
+
+        private bool isDragging;
+
+        private void Awake()
         {
-            throw new System.NotImplementedException();
+            if(Instance == null) Instance = this;
+            else Destroy(gameObject);
+
+            dragIcon.enabled = false;
+            dragCanvasGroup.blocksRaycasts = false;
         }
 
-        public void OnDrag(PointerEventData eventData)
+        public void BeginDrag(InventorySlotUI slot)
         {
-            throw new System.NotImplementedException();
-        }
 
-        public void OnEndDrag(PointerEventData eventData)
-        {
-            throw new System.NotImplementedException();
         }
     }
 }
