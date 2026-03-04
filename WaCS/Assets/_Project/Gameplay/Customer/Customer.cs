@@ -1,28 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using _Project.Systems.Game;
 using UnityEngine;
+using System.Collections.Generic;
 
 namespace _Project.Gameplay.Customer
 {
-    // Represents a customer's shopping cart, allowing them to add items they intend to purchase.
-    public class CustomerCart
-    {
-        private List<ItemData> items = new List<ItemData>();
-
-        public void Add(ItemData item)
-        {
-            items.Add(item);
-        }
-
-        public void Clear()
-        {
-            items.Clear();
-        }
-
-        public IReadOnlyList<ItemData> Item => items.AsReadOnly();
-    }
-
     public class Customer : MonoBehaviour, IPoolable
     {
         [Header("Reference")]

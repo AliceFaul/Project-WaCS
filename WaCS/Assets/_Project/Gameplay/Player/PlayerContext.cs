@@ -20,7 +20,6 @@
             Movement = controller.GetComponent<IPlayerMovement>();
             
             StateMachine = new PlayerStateMachine();
-
             Inventory = new Inventory();
             Hotbar = new Hotbar(9);
         }

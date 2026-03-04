@@ -4,130 +4,95 @@ using System.Collections.Generic;
 
 namespace _Project.Gameplay.Player
 {
+    public class EquipmentItem
+    {
+        public string Name { get; }
+        public Sprite Icon { get; }
+        public Action OnUse { get; }
+        public EquipmentItem(string name, Sprite icon, Action onUse)
+        {
+            Name = name;
+            Icon = icon;
+            OnUse = onUse;
+        }
+    }
+
     public class HotbarSlot
     {
-        public InventorySlot LinkedSlot { get; private set; }
-        public bool IsEmpty => LinkedSlot == null || LinkedSlot.IsEmpty;
-        public void SetItem(InventorySlot item)
+        public EquipmentItem Item { get; private set; }
+        public bool IsEmpty => Item == null;
+        public void SetItem(EquipmentItem item)
         {
-            LinkedSlot = item;
+            Item = item;
         }
         public void Clear()
         {
-            LinkedSlot = null;
+            Item = null;
         }
     }
 
     [System.Serializable]
     public class Hotbar
     {
-        private readonly List<HotbarSlot> _slots;
+        private readonly List<HotbarSlot> _slots = new List<HotbarSlot>();
         private int _selectedIndex = 0;
 
         public int SlotCount => _slots.Count;
         public int SelectedIndex => _selectedIndex;
-        public HotbarSlot SelectedSlot 
-            => _slots.Count > 0 ? _slots[_selectedIndex] : null;
+        public HotbarSlot SelectedSlot => _slots.Count > 0 ? _slots[_selectedIndex] : null;
 
-        public IReadOnlyList<HotbarSlot> Slots => _slots;
-
-        public event Action<IReadOnlyList<HotbarSlot>> OnHotbarChanged;
+        public event Action<int, EquipmentItem> OnHotbarChanged;
         public event Action<int> OnSlotSelected;
 
         public Hotbar(int slotCount)
         {
             _slots = new List<HotbarSlot>(slotCount);
-            for(int i = 0; i < slotCount; i++)
+            for (int i = 0; i < slotCount; i++)
             {
                 _slots.Add(new HotbarSlot());
             }
         }
 
-        // SLOT MANAGEMENT
-        public void SetItem(int slotIndex, InventorySlot item)
+        public void SetItem(int slot, EquipmentItem item)
         {
-            if(!IsValidIndex(slotIndex))
+            if (slot < 0 || slot >= _slots.Count)
             {
-                Debug.LogWarning("Invalid hotbar slot index");
+                Debug.LogWarning("Invalid hotbar slot index.");
                 return;
             }
-            _slots[slotIndex].SetItem(item);
-            OnHotbarChanged?.Invoke(_slots);
+            _slots[slot].SetItem(item);
+            OnHotbarChanged?.Invoke(slot, item);
         }
 
         public void ClearSlot(int slotIndex)
         {
-            if (!IsValidIndex(slotIndex))
+            if (slotIndex < 0 || slotIndex >= _slots.Count)
             {
-                Debug.LogWarning("Invalid hotbar slot index");
+                Debug.LogWarning("Invalid hotbar slot index.");
                 return;
             }
             _slots[slotIndex].Clear();
-            OnHotbarChanged?.Invoke(_slots);
+            OnHotbarChanged?.Invoke(slotIndex, null);
         }
 
-        // SELECTION
         public void SelectSlot(int slotIndex)
         {
-            if(!IsValidIndex(slotIndex))
+            if(slotIndex > _slots.Count)
             {
-                Debug.LogWarning("Invalid hotbar slot index");
-                return;
-            }
-            if(_selectedIndex == slotIndex)
-            {
-                Debug.Log("Slot already selected");
+                Debug.LogWarning("Invalid hotbar slot index.");
                 return;
             }
             _selectedIndex = slotIndex;
-            OnSlotSelected?.Invoke(_selectedIndex);
+            OnSlotSelected?.Invoke(slotIndex);
         }
 
-        public void SelectNext()
+        public void UseSelectedItem()
         {
-            if (_slots.Count == 0) return;
-            int next = (_selectedIndex + 1) % _slots.Count;
-            SelectSlot(next);
-        }
-
-        public void SelectPrevious()
-        {
-            if (_slots.Count == 0) return;
-            int prev = (_selectedIndex - 1 + _slots.Count) % _slots.Count;
-            SelectSlot(prev);
-        }
-
-        // BIND INPUT
-        public void BindInput(IPlayerInput input)
-        {
-            if(input == null) return;
-
-            if(input.HotbarNext)
-                SelectNext();
-            
-            if(input.HotbarPrevious)
-                SelectPrevious();
-            
-            if(input.HotbarNumberPressed >= 0)
-                SelectSlot(input.HotbarNumberPressed);
-        }
-
-        // HELPERS
-        private bool IsValidIndex(int index)
-        {
-            return index >= 0 && index < _slots.Count;
-        }
-
-        public ItemData GetEquippedItem()
-        {
-            var slot = SelectedSlot;
-            return slot != null && !slot.IsEmpty ? slot.LinkedSlot.Item : null;
-        }
-
-        public bool HasEquippedItem()
-        {
-            var slot = SelectedSlot;
-            return slot != null && !slot.IsEmpty;
+            var selectedSlot = SelectedSlot;
+            if (selectedSlot != null && !selectedSlot.IsEmpty)
+            {
+                selectedSlot.Item.OnUse?.Invoke();
+            }
         }
     }
 }

@@ -10,25 +10,13 @@ namespace _Project.Core.SceneManagement
     public class Bootstrapper : MonoBehaviour
     {
         private readonly List<IManager> _managers = new List<IManager>();
-        private static bool _isInitialized = false;
 
         private async void Awake()
         {
-            if(_isInitialized)
-            {
-                Debug.LogWarning("[Bootstrapper] already initialized, skipping...");
-                Destroy(gameObject);
-                return;
-            }
-
-            _isInitialized = true;
-            DontDestroyOnLoad(this.gameObject);
-
             try
             {
                 RegisterManager();
                 await InitManager();
-                await SceneLoader.Instance.LoadSceneGroup(0);
             }
             catch(Exception e)
             {

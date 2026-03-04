@@ -7,134 +7,83 @@ namespace _Project.Gameplay.Player
     [System.Serializable]
     public class InventorySlot
     {
-        public ItemData Item { get; private set; }
-        public int Quantity { get; private set; }
+        public ItemData item;
+        public int quantity;
 
-        public bool IsEmpty => Item == null;
-
-        public void SetItem(ItemData item, int quantity)
-        {
-            Item = item;
-            Quantity = quantity;
-        }
-
-        public void AddQuantity(int amount = 1)
-        {
-            Quantity += amount;
-        }
-
-        public void RemoveQuantity(int amount = 1)
-        {
-            Quantity -= amount;
-            if (Quantity <= 0)
-            {
-                Clear();
-            }
-        }
+        public bool IsEmpty => item == null || quantity <= 0;
 
         public void Clear()
         {
-            Item = null;
-            Quantity = 0;
+            item = null;
+            quantity = 0;
         }
     }
 
     [System.Serializable]
     public class Inventory
     {
-        private readonly List<InventorySlot> _slots;
+        public List<InventorySlot> slots = new List<InventorySlot>();
+        public int maxSlotCount = 20;
 
-        public IReadOnlyList<InventorySlot> Slots => _slots;
-        public int SlotCount => _slots.Count;
+        public event Action<List<InventorySlot>> OnInventoryChanged;
 
-        public event Action<IReadOnlyList<InventorySlot>> OnInventoryChanged;
-
-        public Inventory(int slotCount = 25)
+        public Inventory(int slotCount = 20)
         {
-            _slots = new List<InventorySlot>(slotCount);
-            for(int i = 0; i < slotCount; i++)
-            {
-                _slots.Add(new InventorySlot());
-            }
+            maxSlotCount = slotCount;
         }
 
-        // INVENTORY MANAGEMENT
-
-        // Returns true if all items were added, false if some couldn't be added due to lack of space
+        // Returns true if item was added successfully, false if inventory full or invalid input
         public bool AddItem(ItemData item, int quantity = 1)
         {
-
             if (item == null || quantity <= 0)
             {
-                Debug.LogWarning("Invalid item or quantity");
+                Debug.LogWarning("Invalid item or quantity. Cannot add to inventory.");
                 return false;
             }
-            int remaining = quantity;
-
-            // Try to stack in existing slots
-            foreach (var slot in _slots)
+            // Try to find an existing slot for this item
+            var slot = slots.Find(s => s.item != null && s.item.ItemID == item.ItemID);
+            if (slot != null)
             {
-                if (slot.IsEmpty)
-                    continue;
-                if (slot.Item.ItemID == item.ItemID &&
-                    slot.Quantity < item.MaxStackSize)
-                {
-                    int space = item.MaxStackSize - slot.Quantity;
-                    int addAmount = Mathf.Min(space, remaining);
-                    slot.AddQuantity(addAmount);
-                    remaining -= addAmount;
-                    if (remaining <= 0)
-                    {
-                        OnInventoryChanged?.Invoke(_slots);
-                        return true;
-                    }
-                }
+                // If found, increase quantity
+                slot.quantity += quantity;
+                OnInventoryChanged?.Invoke(slots);
+                return true;
             }
-
-            // Try to add to empty slots
-            foreach (var slot in _slots)
+            else
             {
-                if (!slot.IsEmpty)
-                    continue;
-                int addAmount = Mathf.Min(item.MaxStackSize, remaining);
-                slot.SetItem(item, addAmount);
-                remaining -= addAmount;
-                if (remaining <= 0)
+                // If not found, try to add a new slot if we have capacity
+                if (slots.Count < maxSlotCount)
                 {
-                    OnInventoryChanged?.Invoke(_slots);
+                    slots.Add(new InventorySlot { item = item, quantity = quantity });
+                    OnInventoryChanged?.Invoke(slots);
                     return true;
                 }
             }
-
-            // Inventory full, some items couldn't be added
-            OnInventoryChanged?.Invoke(_slots);
+            // Inventory full or invalid input
             return false;
         }
 
+        // Returns true if item was removed successfully,
+        // false if item not found or not enough quantity
         public bool RemoveItem(ItemData item, int quantity = 1)
         {
             if (item == null || quantity <= 0)
             {
-                Debug.LogWarning("Invalid item or quantity");
+                Debug.LogWarning("Invalid item ID or quantity. Cannot remove from inventory.");
                 return false;
             }
-            int remaining = quantity;
-            foreach (var slot in _slots)
+            var slot = slots.Find(s => s.item != null && s.item.ItemID == item.ItemID);
+            if (slot != null && slot.quantity >= quantity)
             {
-                if (slot.IsEmpty) continue;
-                if (slot.Item.ItemID != item.ItemID) continue;
-
-                int removeAmount = Mathf.Min(slot.Quantity, remaining);
-                slot.RemoveQuantity(removeAmount);
-                remaining -= removeAmount;
-                if (remaining <= 0)
+                slot.quantity -= quantity;
+                if (slot.quantity <= 0)
                 {
-                    OnInventoryChanged?.Invoke(_slots);
-                    return true;
+                    slot.Clear();
                 }
+                OnInventoryChanged?.Invoke(slots);
+                return true;
             }
-            // Not enough items to remove
-            OnInventoryChanged?.Invoke(_slots);
+            // Item not found or not enough quantity
             return false;
         }
     }
