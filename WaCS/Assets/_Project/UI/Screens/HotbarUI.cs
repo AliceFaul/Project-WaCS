@@ -13,13 +13,14 @@ namespace _Project.UI.Screens
 
         private Hotbar _hotbar;
         private List<GameObject> _slotUIs = new List<GameObject>();
+        public Hotbar GetHotbar() => _hotbar;
 
         public void Init(Hotbar hotbar)
         {
             _hotbar = hotbar;
 
             CreateSlots();
-            UpdateUI(_hotbar.Slots);
+            RefreshAll();
             HighlightSlot(_hotbar.SelectedIndex);
             
             _hotbar.OnHotbarChanged += UpdateUI;
@@ -45,11 +46,19 @@ namespace _Project.UI.Screens
             for(int i = 0; i < _hotbar.SlotCount; i++)
             {
                 var slot = Instantiate(slotPrefab, hotbarContent);
+                var slotUI = slot.GetComponent<HotbarSlotUI>();
+                slotUI.Bind(_hotbar.Slots[i]);
                 _slotUIs.Add(slot);
                 
                 var numberText = slot.transform.GetComponentInChildren<TMP_Text>();
                 numberText.text = (i + 1).ToString();
             }
+        }
+
+        public void RefreshAll()
+        {
+            UpdateUI(_hotbar.Slots);
+            HighlightSlot(_hotbar.SelectedIndex);
         }
 
         private void UpdateUI(IReadOnlyList<HotbarSlot> slots)
@@ -58,18 +67,7 @@ namespace _Project.UI.Screens
             {
                 var slot = slots[i];
                 var slotUI = _slotUIs[i];
-                var itemIcon = slotUI.transform.Find("Icon").GetComponent<Image>();
-
-                if (slot.IsEmpty)
-                {
-                    itemIcon.sprite = null;
-                    itemIcon.enabled = false;
-                }
-                else
-                {
-                    itemIcon.sprite = slot.LinkedSlot.Item.Icon;
-                    itemIcon.enabled = true;
-                }
+                slotUI.GetComponent<HotbarSlotUI>().Refresh();
             }
         }
 
@@ -79,7 +77,7 @@ namespace _Project.UI.Screens
             {
                 var highlight = _slotUIs[i].
                     transform.Find("Highlight").GetComponent<Image>();
-                highlight.enabled = (i == index);
+                highlight.gameObject.SetActive((i == index));
             }
         }
     }

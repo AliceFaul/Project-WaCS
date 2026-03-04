@@ -56,6 +56,8 @@ namespace _Project.UI.Screens
             for(int i = 0; i < _inventory.SlotCount; i++)
             {
                 var slot = Instantiate(slotPrefab, inventoryContent);
+                var slotUI = slot.GetComponent<InventorySlotUI>();
+                slotUI.Bind(_inventory.Slots[i]);
                 _slotUIs.Add(slot);
             }
         }
@@ -66,21 +68,7 @@ namespace _Project.UI.Screens
             {
                 var slot = slots[i];
                 var slotUI = _slotUIs[i];
-                var itemIcon = slotUI.transform.Find("Icon").GetComponent<Image>();
-                var quantityText = slotUI.transform.Find("Quantity").GetComponent<TMP_Text>();
-
-                if(slot.IsEmpty)
-                {
-                    itemIcon.sprite = null;
-                    itemIcon.enabled = false;
-                    quantityText.text = "";
-                }
-                else
-                {
-                    itemIcon.sprite = slot.Item.Icon;
-                    itemIcon.enabled = true;
-                    quantityText.text = slot.Quantity > 1 ? slot.Quantity.ToString() : "";
-                }
+                slotUI.GetComponent<InventorySlotUI>().Refresh();
             }
         }
     }

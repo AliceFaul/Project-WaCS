@@ -30,7 +30,7 @@ namespace _Project.Systems.Game
             // First try to find a shelf point that already has the same item type and can accept more items
             foreach (var point in shelfPoints)
             {
-                if (point.HasItems && point.ItemType == item && !point.IsFull)
+                if (point.HasItems && point.CanAdd(item))
                 {
                     point.AddOne();
                     return true;

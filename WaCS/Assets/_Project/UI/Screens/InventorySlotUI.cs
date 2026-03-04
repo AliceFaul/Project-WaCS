@@ -8,7 +8,9 @@ using UnityEngine.UI;
 
 namespace _Project.UI.Screens
 {
-    public class InventorySlotUI : MonoBehaviour, IPointerDownHandler, IPointerEnterHandler, IPointerExitHandler
+    public class InventorySlotUI : MonoBehaviour,
+        IBeginDragHandler, IDragHandler, IEndDragHandler, 
+        IPointerEnterHandler, IPointerExitHandler
     {
         [SerializeField] private Image icon; // Reference to the UI Image component for displaying the item icon
         [SerializeField] private TMP_Text quantityText; // Reference to the TextMeshPro component for displaying item quantity
@@ -38,12 +40,6 @@ namespace _Project.UI.Screens
             }
         }
 
-        // Called when the user clicks on the inventory slot
-        public void OnPointerDown(PointerEventData eventData)
-        {
-            ItemDragHandler.Instance.BeginDrag(this);
-        }
-
         // Called when the user's pointer enters the inventory slot (for hover effects)
         public void OnPointerEnter(PointerEventData eventData)
         {
@@ -56,6 +52,26 @@ namespace _Project.UI.Screens
         {
             RectTransform rect = GetComponent<RectTransform>();
             TweenHelper.Instance.HoverExit(rect);
+        }
+
+        public void OnBeginDrag(PointerEventData eventData)
+        {
+            if(_slotData == null)
+            {
+                Debug.LogWarning("Attempted to drag from a null slot.");
+                return;
+            }
+            ItemDragHandler.Instance.BeginDrag(this, eventData);
+        }
+
+        public void OnDrag(PointerEventData eventData)
+        {
+            ItemDragHandler.Instance.UpdateDragPosition(eventData);
+        }
+
+        public void OnEndDrag(PointerEventData eventData)
+        {
+            ItemDragHandler.Instance.EndDrag();
         }
     }
 }

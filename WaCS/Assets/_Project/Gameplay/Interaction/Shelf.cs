@@ -40,10 +40,18 @@ namespace _Project.Gameplay.Interaction
                 return;
             }
             ItemData item = context.Hotbar.GetEquippedItem();
-            bool placed = _controller.TryPlaceItem(item);
-            if(!placed)
+            Debug.Log("Equipped Item: " + item.ItemID);
+
+            ShelfPoint point = GetLookedShelfPoint();
+            if (point == null)
             {
-                Debug.LogWarning("Could not place item on shelf: shelf is full or item type doesn't match");
+                Debug.LogWarning("Player tried to place item on shelf but is not looking at a shelf point");
+                return;
+            }
+            bool placed = point.TryAdd(item);
+            if (!placed)
+            {
+                Debug.LogWarning("Player tried to place item on shelf but it couldn't be placed (shelf might be full or item type might not match)");
                 return;
             }
             // If we successfully placed the item on the shelf, remove it from the player's inventory
@@ -69,10 +77,12 @@ namespace _Project.Gameplay.Interaction
         {
             Ray ray = new Ray(Camera.main.transform.position, 
                 Camera.main.transform.forward);
-            if(Physics.Raycast(ray, out RaycastHit hit, 3f))
+            if(Physics.Raycast(ray, out RaycastHit hit, 5f))
             {
-                return hit.collider.GetComponentInParent<ShelfPoint>();
+                Debug.Log("Raycast hit: " + hit.collider.name);
+                return hit.collider.GetComponent<ShelfPoint>();
             }
+            Debug.Log("Raycast did not hit any shelf point");
             return null;
         }
     }

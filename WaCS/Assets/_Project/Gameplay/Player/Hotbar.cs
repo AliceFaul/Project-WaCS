@@ -8,10 +8,17 @@ namespace _Project.Gameplay.Player
     {
         public InventorySlot LinkedSlot { get; private set; }
         public bool IsEmpty => LinkedSlot == null || LinkedSlot.IsEmpty;
+        
         public void SetItem(InventorySlot item)
         {
             LinkedSlot = item;
         }
+
+        public void SetLink(InventorySlot inventorySlot)
+        {
+            LinkedSlot = inventorySlot;
+        }
+
         public void Clear()
         {
             LinkedSlot = null;
@@ -22,12 +29,12 @@ namespace _Project.Gameplay.Player
     public class Hotbar
     {
         private readonly List<HotbarSlot> _slots;
-        private int _selectedIndex = 0;
+        private int _selectedIndex = -1;
 
         public int SlotCount => _slots.Count;
         public int SelectedIndex => _selectedIndex;
         public HotbarSlot SelectedSlot 
-            => _slots.Count > 0 ? _slots[_selectedIndex] : null;
+            => IsValidIndex(_selectedIndex) ? _slots[_selectedIndex] : null;
 
         public IReadOnlyList<HotbarSlot> Slots => _slots;
 
@@ -63,6 +70,10 @@ namespace _Project.Gameplay.Player
                 return;
             }
             _slots[slotIndex].Clear();
+            if(_selectedIndex == slotIndex)
+            {
+                Deselect();
+            }
             OnHotbarChanged?.Invoke(_slots);
         }
 
@@ -77,10 +88,25 @@ namespace _Project.Gameplay.Player
             if(_selectedIndex == slotIndex)
             {
                 Debug.Log("Slot already selected");
+                Deselect();
+                return;
+            }
+            if (_slots[slotIndex].IsEmpty)
+            {
+                Deselect();
+                Debug.Log("Selected empty slot, deselecting");
                 return;
             }
             _selectedIndex = slotIndex;
             OnSlotSelected?.Invoke(_selectedIndex);
+            Debug.Log($"Selected hotbar slot: {_selectedIndex}");
+        }
+
+        public void Deselect()
+        {
+            _selectedIndex = -1;
+            OnSlotSelected?.Invoke(_selectedIndex);
+            Debug.Log("Deselected hotbar slot");
         }
 
         public void SelectNext()

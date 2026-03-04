@@ -37,6 +37,7 @@ namespace _Project.Gameplay.Player
         {
             Context.Movement.Move(Context.Input.Move);
             Context.StateMachine.UpdateState();
+            Context.Hotbar.BindInput(Context.Input);
             if(Context.Input.Inventory)
             {
                 _inventoryOpen =  !_inventoryOpen;
