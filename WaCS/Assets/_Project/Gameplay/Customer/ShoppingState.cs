@@ -91,20 +91,7 @@ namespace _Project.Gameplay.Customer
 
         private void TakeItemFromShelf()
         {
-            var closestShelf = GetClosestShelf();
-            if(closestShelf == null) return;
-            var shelf = closestShelf.GetComponent<Shelf>();
-            if(shelf == null) return;
-
-            if(shelf.GetAnyItem(out var item))
-            {
-                _cart.Add(item);
-                Debug.Log("Customer added " + item.DisplayName + " to cart");
-            }
-            else
-            {
-                Debug.Log("Customer found no items on shelf");
-            }
+            
         }
 
         private Transform GetClosestShelf()
