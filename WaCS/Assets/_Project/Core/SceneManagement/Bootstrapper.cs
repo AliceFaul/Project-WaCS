@@ -4,11 +4,16 @@ using System.Threading.Tasks;
 using _Project.Systems.Game;
 using _Project.Core.Event;
 using System;
+using Project.Systems.SaveLoad;
 
 namespace _Project.Core.SceneManagement
 {
     public class Bootstrapper : MonoBehaviour
     {
+        [SerializeField] private ItemDictionary itemDictionary;
+        [SerializeField] private bool loadExistingSave = false;
+        [SerializeField] private string saveFileName = "DefaultSave";
+
         private readonly List<IManager> _managers = new List<IManager>();
         private static bool _isInitialized = false;
 
@@ -26,8 +31,18 @@ namespace _Project.Core.SceneManagement
 
             try
             {
+                ItemDictionary.SetInstance(itemDictionary);
                 RegisterManager();
                 await InitManager();
+
+                if(loadExistingSave)
+                {
+                    SaveLoadService.Instance.LoadGame(saveFileName);
+                }
+                else
+                {
+                    SaveLoadService.Instance.NewGame();
+                }
                 await SceneLoader.Instance.LoadSceneGroup(0);
             }
             catch(Exception e)

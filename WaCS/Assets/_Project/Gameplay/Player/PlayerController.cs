@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System;
 using Project.Systems.Game;
+using Project.Systems.SaveLoad;
 
 namespace _Project.Gameplay.Player
 {
@@ -29,6 +30,7 @@ namespace _Project.Gameplay.Player
 
             Context = new PlayerContext(this);
             ServiceRegistry.Register(Context);
+            SaveLoadService.Instance.RegisterSaveData(Context);
             Context.StateMachine.ChangeState(new  PlayerIdleState(this));
             interaction.Init(Context);
         }

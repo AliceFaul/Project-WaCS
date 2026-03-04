@@ -12,6 +12,7 @@ namespace _Project.UI.Screens
     {
         [SerializeField] private Image icon; // Reference to the UI Image component for displaying the item icon
         private HotbarSlot _slotData;
+        public ItemData AssignedItem { get; private set; }
 
         public HotbarSlot GetData() => _slotData;
 

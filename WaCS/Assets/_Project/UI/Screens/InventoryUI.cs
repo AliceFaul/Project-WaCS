@@ -1,8 +1,6 @@
 using _Project.Gameplay.Player;
 using UnityEngine;
 using System.Collections.Generic;
-using UnityEngine.UI;
-using TMPro;
 using Project.Systems.Game;
 
 namespace _Project.UI.Screens

@@ -4,6 +4,15 @@ using System.Collections.Generic;
 
 namespace _Project.Gameplay.Player
 {
+    // This class represents the player's hotbar, which allows quick access to items linked from the inventory. Each hotbar slot can be linked to an inventory slot,
+    // and selecting a hotbar slot will equip the item from the linked inventory slot.
+    [Serializable]
+    public class HotbarSaveData
+    {
+        public List<int> LinkedInventorySlotIndices = new();
+        public int SelectedIndex = -1;
+    }
+
     public class HotbarSlot
     {
         public InventorySlot LinkedSlot { get; private set; }
@@ -17,6 +26,16 @@ namespace _Project.Gameplay.Player
         public void SetLink(InventorySlot inventorySlot)
         {
             LinkedSlot = inventorySlot;
+        }
+
+        public void Validate()
+        {
+            if(LinkedSlot == null)
+                return;
+            if (LinkedSlot != null && LinkedSlot.IsEmpty)
+            {
+                LinkedSlot = null;
+            }
         }
 
         public void Clear()
@@ -144,16 +163,48 @@ namespace _Project.Gameplay.Player
             return index >= 0 && index < _slots.Count;
         }
 
+        public void ValidateAllSlots()
+        {
+            foreach(var slot in _slots)
+            {
+                slot.Validate();
+            }
+            if(_selectedIndex >= 0 && _selectedIndex < _slots.Count)
+            {
+                if (_slots[_selectedIndex].IsEmpty)
+                {
+                    Deselect();
+                }
+            }
+        }
+
         public ItemData GetEquippedItem()
         {
+            ValidateAllSlots();
             var slot = SelectedSlot;
             return slot != null && !slot.IsEmpty ? slot.LinkedSlot.Item : null;
         }
 
         public bool HasEquippedItem()
         {
+            ValidateAllSlots();
             var slot = SelectedSlot;
             return slot != null && !slot.IsEmpty;
+        }
+
+        public void ClearAll()
+        {
+            foreach (var slot in _slots)
+            {
+                slot.Clear();
+            }
+            Deselect();
+            NotifyChange();
+        }
+
+        public void NotifyChange()
+        {
+            OnHotbarChanged?.Invoke(_slots);
         }
     }
 }
