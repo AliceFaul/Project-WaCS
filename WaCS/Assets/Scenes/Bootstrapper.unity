@@ -477,7 +477,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 22e2a96e741f43f0b9b0b4c9335a3539, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Core.SceneManagement.Bootstrapper
-  itemDictionary: {fileID: 0}
+  itemDictionary: {fileID: 11400000, guid: 6a4e8d3249f39f4468aefa8c852b19a6, type: 2}
   loadExistingSave: 0
   saveFileName: DefaultSave
 --- !u!4 &637211770
