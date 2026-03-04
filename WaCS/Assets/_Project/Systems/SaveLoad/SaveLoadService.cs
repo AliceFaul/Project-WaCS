@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System;
 using _Project.Gameplay.Player;
+using _Project.Systems.Game;
 
 namespace Project.Systems.SaveLoad
 {
@@ -12,6 +13,8 @@ namespace Project.Systems.SaveLoad
         public string Name;
         public long LastSaveTime;
         public PlayerData Player;
+        public EconomySaveData Economy;
+        public List<ShelfSaveData> Shelves = new();
     }
 
     public class SaveLoadService : PersistentSingleton<SaveLoadService>

@@ -13,18 +13,11 @@ namespace _Project.Gameplay.Customer
 
         public void EnterState()
         {
-            Debug.Log("Customer enter paying state!");
-            _customer.StartCheckout();
+            _customer.GetCheckout().StartCheckout(_customer.name);
         }
 
-        public void ExitState()
-        {
-            Debug.Log("Customer exit paying state!");
-        }
+        public void UpdateState() { }
 
-        public void UpdateState()
-        {
-
-        }
+        public void ExitState() { }
     }
 }

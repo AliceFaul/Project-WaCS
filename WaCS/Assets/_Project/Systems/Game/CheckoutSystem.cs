@@ -105,6 +105,7 @@ namespace _Project.Systems.Game
         private readonly EventManager _eventManager;
 
         private Transform _checkoutPosition;
+        private bool _scanFinished;
 
         public CheckoutSystem(EventManager eventManager)
         {
@@ -131,13 +132,14 @@ namespace _Project.Systems.Game
         {
             if(_currentSession != null) return false;
             _currentSession = new CheckoutSession(customerId);
+            _scanFinished = false;
             _eventManager.Publish(new CheckoutStarted(customerId));
             return true;
         }
 
         public bool TryScanItem(ItemData item)
         {
-            if(_currentSession == null || item == null)
+            if(_currentSession == null || item == null || _scanFinished)
                 return false;
             if(!_currentSession.TryAddItem(item))
                 return false;
@@ -150,10 +152,12 @@ namespace _Project.Systems.Game
 
         public bool TryFinishScan()
         {
-            if(_currentSession == null) 
+            if(_currentSession == null || _scanFinished) 
                 return false;
             if(!_currentSession.TryFinishScan())
                 return false;
+
+            _scanFinished = true;
 
             var finalTotal = _currentSession.TotalPrice;
             var itemCount = _currentSession.Items.Count;
@@ -181,7 +185,7 @@ namespace _Project.Systems.Game
         public bool TryCompleteCheckout(out CheckoutResult result)
         {
             result = default;
-            if (_currentSession == null)
+            if (_currentSession == null || _scanFinished)
                 return false;
             if (!_currentSession.TryComplete(out result))
                 return false;

@@ -3,145 +3,79 @@ using UnityEngine;
 
 namespace _Project.Gameplay.Customer
 {
-    public enum ShoppingPhase
-    {
-        MoveToShelf,
-        Browse
-    }
-
     public class ShoppingState : ICustomerState
     {
         private Customer _customer;
-        private Transform _currentShelf;
+        private ShelfService _shelfService;
 
-        private float _totalShoppingTime;
-        private float _shoppingTimer;
+        private ShelfPoint _currentPoint;
+        private int _itemsCollected;
 
-        private float _browseTimer;
-        private float _currentBrowseTime;
-
-        private int _shelvesToVisit;
-        private int _shelvesVisited;
-
-        private ShoppingPhase _phase;
-
-        // TODO: This should be generated based on the customer's shopping list and the shelves they visit
-        private CustomerCart _cart;
-
-        public ShoppingState(Customer customer, float totalShoppingTime)
+        public ShoppingState(Customer customer)
         {
             _customer = customer;
-            _totalShoppingTime = totalShoppingTime;
-            _cart = _customer.CustomerCart;
+            _shelfService = customer.GetShelfService();
         }
 
         public void EnterState()
         {
-            _shoppingTimer = 0f;
-            _shelvesVisited = 0;
-            _shelvesToVisit = _customer.ShoppingPoints.Length;
-            if(_shelvesToVisit == 0)
-            {
-                Debug.LogWarning("Customer has no shopping points");
-                FinishShopping();
-                return;
-            }
+            _itemsCollected = 0;
             GoToNextShelf();
-        }
-
-        public void ExitState()
-        {
-            Debug.Log("Customer exit shopping state!");
         }
 
         public void UpdateState()
         {
-            _shoppingTimer += Time.deltaTime;
-            if (_shoppingTimer >= _totalShoppingTime)
-            {
-                FinishShopping();
+            if (_currentPoint == null)
                 return;
-            }
-            switch (_phase)
+
+            if (!_customer.Movement.HasReachDestination)
+                return;
+
+            TryTakeItem();
+
+            if (_itemsCollected >= _customer.Brain.TargetItemCount)
             {
-                case ShoppingPhase.MoveToShelf:
-                    HandleMoving();
-                    break;
-                case ShoppingPhase.Browse:
-                    HandleBrowsing();
-                    break;
+                _customer.ChangeState(new WaitingState(_customer));
+            }
+            else
+            {
+                GoToNextShelf();
             }
         }
 
-        // Phase: Moving to Shelf
-        private void HandleMoving()
-        {
-            if (_customer.Movement.HasReachDestination)
-            {
-                StartBrowsing();
-            }
-        }
+        public void ExitState() { }
 
         private void GoToNextShelf()
         {
-            _currentShelf = _customer.GetRandomShoppingPoint();
-            _customer.Movement.MoveTo(_currentShelf.position);
-            _phase = ShoppingPhase.MoveToShelf;
-        }
+            _currentPoint = _shelfService.GetRandomAvailablePoint();
 
-        private void TakeItemFromShelf()
-        {
-            
-        }
-
-        private Transform GetClosestShelf()
-        {
-            Transform closestShelf = null;
-            float closestDistance = Mathf.Infinity;
-            Vector3 currentPosition = _customer.transform.position;
-            foreach (var shelf in _customer.ShoppingPoints)
+            if (_currentPoint == null)
             {
-                float distance = Vector3.Distance(currentPosition, shelf.position);
-                if (distance < closestDistance)
-                {
-                    closestDistance = distance;
-                    closestShelf = shelf;
-                }
+                _customer.ChangeState(new LeavingState(_customer));
+                return;
             }
-            return closestShelf;
+
+            _customer.Movement.MoveTo(
+                _currentPoint.CustomerStandPoint.position
+            );
         }
 
-        // Phase: Browsing
-        private void StartBrowsing()
+        private void TryTakeItem()
         {
-            _currentBrowseTime = Random.Range(1f, 2f);
-            _browseTimer = 0f;
-            _phase = ShoppingPhase.Browse;
-        }
+            if (_currentPoint.IsEmpty)
+                return;
 
-        private void HandleBrowsing()
-        {
-            _browseTimer += Time.deltaTime;
-            if (_browseTimer >= _currentBrowseTime)
-            {
-                TakeItemFromShelf();
-                _shelvesVisited++;
-                if (_shelvesVisited >= _shelvesToVisit)
-                {
-                    // Finish shopping, go to queue
-                    FinishShopping();
-                }
-                else
-                {
-                    GoToNextShelf();
-                }
-            }
-        }
+            var item = _currentPoint.ItemType;
 
-        private void FinishShopping()
-        {
-            // TODO: Generate Cart
-            _customer.GoToQueue();
+            if (!_customer.Brain.CanAfford(_currentPoint.Price))
+                return;
+
+            _currentPoint.RemoveOne();
+
+            _customer.Cart.Add(item);
+            _customer.Brain.Spend(_currentPoint.Price);
+
+            _itemsCollected++;
         }
     }
 }

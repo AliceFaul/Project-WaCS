@@ -5,124 +5,127 @@ using UnityEngine;
 
 namespace _Project.Gameplay.Customer
 {
+    [System.Serializable]
+    public class CustomerProfile
+    {
+        public float minBudget = 20f;
+        public float maxBudget = 100f;
+
+        public float minPatience = 5f;
+        public float maxPatience = 15f;
+
+        public int minItems = 1;
+        public int maxItems = 5;
+    }
+
+    public class CustomerConfig
+    {
+        public float Budget { get; private set; }
+        public float Patience { get; private set; }
+
+        private int _targetItemCount;
+
+        public CustomerConfig(CustomerProfile profile)
+        {
+            Budget = UnityEngine.Random.Range(profile.minBudget, profile.maxBudget);
+            Patience = UnityEngine.Random.Range(profile.minPatience, profile.maxPatience);
+            _targetItemCount = UnityEngine.Random.Range(profile.minItems, profile.maxItems + 1);
+        }
+
+        public int TargetItemCount => _targetItemCount;
+
+        public bool CanAfford(float price)
+        {
+            return Budget >= price;
+        }
+
+        public void Spend(float price)
+        {
+            Budget -= price;
+        }
+    }
+
     // Represents a customer's shopping cart, allowing them to add items they intend to purchase.
     public class CustomerCart
     {
-        private List<ItemData> items = new List<ItemData>();
+        private List<ItemData> _items = new List<ItemData>();
+
+        public IReadOnlyList<ItemData> Items => _items;
 
         public void Add(ItemData item)
         {
-            items.Add(item);
+            _items.Add(item);
+        }
+
+        public float GetTotalPrice()
+        {
+            float total = 0;
+            foreach (var item in _items)
+                total += item.SellPrice;
+            return total;
         }
 
         public void Clear()
         {
-            items.Clear();
+            _items.Clear();
         }
-
-        public IReadOnlyList<ItemData> Item => items.AsReadOnly();
     }
 
     public class Customer : MonoBehaviour, IPoolable
     {
-        [Header("Reference")]
-        [SerializeField] private CustomerMovement movement;
-        [SerializeField] private float waitTime;
-        [SerializeField] private Transform[] shoppingPoints;
-        [SerializeField] private float shoppingDuration = 5f;
+        [Header("Config")]
+        [SerializeField] private CustomerProfile profile;
 
-        // TODO: consider to use event system to decouple the dependency between customer and queue/checkout system
+        [Header("References")]
+        [SerializeField] private CustomerMovement movement;
+
+        private CustomerConfig _brain;
+        private CustomerCart _cart;
+        private CustomerStateMachine _fsm;
+
+        private List<ItemData> _cartItems = new List<ItemData>();
+
         private QueueSystem _queueSystem;
         private CheckoutSystem _checkoutSystem;
+        private ShelfService _shelfService;
 
-        private CustomerStateMachine _stateMachine;
-        private bool _isInQueue;
+        private int _spawnIndex = 0;
+
         private Vector3 _exitPoint;
-        private CustomerCart _customerCart;
 
+        public CustomerConfig Brain => _brain;
+        public CustomerCart Cart => _cart;
         public CustomerMovement Movement => movement;
-        public CustomerCart CustomerCart => _customerCart;
+        public IReadOnlyList<ItemData> CartItems => _cartItems;
 
-        public Transform[] ShoppingPoints => shoppingPoints;
         public event Action<Customer> OnCustomerDespawned;
-
-        public void Init(QueueSystem queueSystem, CheckoutSystem checkoutSystem)
-        {
-            _queueSystem = queueSystem;
-            _checkoutSystem = checkoutSystem;
-            _customerCart = new CustomerCart();
-            SubscribeQueueEvent();
-
-            EnterShoppingState();
-        }
-
-        private void Update()
-        {
-            _stateMachine?.Update();
-        }
-
-        public void StartCheckout()
-        {
-            _checkoutSystem.StartCheckout(gameObject.name);
-        }
-
-        public void GoToQueue()
-        {
-            if(_queueSystem.EnqueueCustomer(this))
-            {
-                _isInQueue = true;
-                EnterWaitingState();
-            }
-            else
-            {
-                EnterLeavingState();
-            }
-        }
-
-        public void CancelQueue()
-        {
-            if(!_isInQueue) return;
-            _isInQueue = false;
-            _queueSystem.RemoveCustomer(this);
-            EnterLeavingState();
-        }
 
         public void OnSpawned()
         {
-            // Reset any necessary state or variables when the customer is spawned from the pool
-            _isInQueue = false;
-            _stateMachine = new CustomerStateMachine();
+            _brain = new CustomerConfig(profile);
+            _cart = new CustomerCart();
+            _fsm = new CustomerStateMachine();
+
+            _queueSystem = ServiceRegistry.Get<QueueSystem>();
+            _checkoutSystem = ServiceRegistry.Get<CheckoutSystem>();
+            _shelfService = ServiceRegistry.Get<ShelfService>();
+
+            ChangeState(new ShoppingState(this));
         }
 
-        public void OnDespawned()
+        public void Update()
         {
-            // Unsubscribe from any events to prevent memory leaks or
-            // unintended behavior when the customer is returned to the pool
-            if (_queueSystem != null)
-            {
-                _queueSystem.OnCustomerPositionUpdated -= HandleQueuePositionChanged;
-                _queueSystem.OnCustomerOnFront -= HandleReachedFront;
-                _queueSystem.OnCustomerDequeued -= HandleDequeued;
-            }
-            // Clean up any state or variables when the customer is returned to the pool
-            if (_isInQueue)
-            {
-                _customerCart?.Clear();
-                _queueSystem.RemoveCustomer(this);
-                _isInQueue = false;
-                movement.Stop();
-            }
-            _stateMachine = null;
+            _fsm?.Update();
         }
 
-        private void SubscribeQueueEvent()
+        public void ChangeState(ICustomerState state)
         {
-            if(_queueSystem != null)
-            {
-                _queueSystem.OnCustomerPositionUpdated += HandleQueuePositionChanged;
-                _queueSystem.OnCustomerOnFront += HandleReachedFront;
-                _queueSystem.OnCustomerDequeued += HandleDequeued;
-            }
+            _fsm.ChangeState(state);
+        }
+
+        public void SetExit(Vector3 exitPos)
+        {
+            _exitPoint = exitPos;
         }
 
         public void SetExitPoint(Vector3 exitPoint)
@@ -130,92 +133,40 @@ namespace _Project.Gameplay.Customer
             _exitPoint = exitPoint;
         }
 
-        #region Customer State Handler
-        private void EnterWaitingState()
+        public Vector3 GetExit() => _exitPoint;
+
+        public QueueSystem GetQueue() => _queueSystem;
+        public CheckoutSystem GetCheckout() => _checkoutSystem;
+        public ShelfService GetShelfService() => _shelfService;
+
+        public void PlaceItemsOnCounter(Transform counterPoint)
         {
-            _stateMachine.ChangeState(new WaitingState(this, waitTime));
+            foreach (var item in _cartItems)
+            {
+                SpawnItemVisual(item, counterPoint);
+            }
         }
 
-        private void EnterLeavingState()
+        private void SpawnItemVisual(ItemData data, Transform counter)
         {
-            _stateMachine.ChangeState(new LeavingState(this));
+            var obj = Instantiate(data.Prefab);
+            obj.transform.position = counter.position + new Vector3(_spawnIndex * 0.2f, 0, 0);
+            _spawnIndex++;
         }
 
-        private void EnterPayingState()
+        public void OnDespawned()
         {
-            _stateMachine.ChangeState(new PayingState(this));
+            _cart.Clear();
+            Movement.Stop();
+            _fsm = null;
+            _queueSystem = null;
+            _checkoutSystem = null;
+            _shelfService = null;
         }
 
-        private void EnterMoveToCheckoutCounterState()
-        {
-            _stateMachine.ChangeState(new MoveToCheckoutCounter(this));
-        }
-
-        private void EnterShoppingState()
-        {
-            _stateMachine.ChangeState(new ShoppingState(this, shoppingDuration));
-        }
-        #endregion
-
-        #region Queue Events
-        private void HandleQueuePositionChanged(Customer customer, int index, Vector3 position)
-        {
-            if (customer != this) return;
-            movement.MoveTo(position);
-        }
-
-        private void HandleReachedFront(Customer customer)
-        {
-            if (customer != this) return;
-            EnterMoveToCheckoutCounterState();
-        }
-
-        private void HandleDequeued(Customer customer)
-        {
-            if (customer != this) return;
-            _isInQueue = false;
-            EnterLeavingState();
-        }
-
-        public void RequestDespawned()
+        public void Despawn()
         {
             OnCustomerDespawned?.Invoke(this);
         }
-        #endregion
-
-        #region Utilities
-        public Vector3 GetCheckoutPosition()
-        {
-            return _checkoutSystem.GetCheckoutPosition();
-        }
-
-        public void OnReachedCheckout()
-        {
-            // Handle actions when the customer reaches the checkout, e.g., start scanning items, show UI, etc.
-            EnterPayingState();
-        }
-
-        public Transform GetRandomShoppingPoint()
-        {
-            if(shoppingPoints == null || shoppingPoints.Length == 0)
-                return transform;
-            int index = UnityEngine.Random.Range(0, shoppingPoints.Length);
-            return shoppingPoints[index];
-        }
-
-        public Vector3 GetExitPosition()
-        {
-            // Return the position where the customer should move to when leaving
-            return _exitPoint; // Placeholder, replace with actual exit position
-        }
-
-        // TODO: enum reason define why customer leave (queue full, no shopping point, etc.)
-        public void OnPaymentCompleted()
-        {
-            // Handle actions after payment is completed, e.g., show thank you message, play animation, etc.
-            if(!_isInQueue) return;
-            _queueSystem.DequeueCustomer();
-        }
-        #endregion
     }
 }

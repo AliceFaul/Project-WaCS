@@ -4,35 +4,38 @@ namespace _Project.Gameplay.Customer
 {
     public class WaitingState : ICustomerState
     {
-        private readonly Customer _customer;
-        private readonly float _waitTime;
+        private Customer _customer;
+        private float _waitTimer;
 
-        private float _timer;
-
-        public WaitingState(Customer customer, float waitTime)
+        public WaitingState(Customer customer)
         {
             _customer = customer;
-            _waitTime = waitTime;
         }
 
         public void EnterState()
         {
-            Debug.Log("Customer enter waiting state!");
-            _timer = 0f;
+            bool success = _customer.GetQueue().EnqueueCustomer(_customer);
+
+            if (!success)
+            {
+                _customer.ChangeState(new LeavingState(_customer));
+                return;
+            }
+
+            _waitTimer = 0;
         }
 
         public void UpdateState()
         {
-            _timer += Time.deltaTime;
-            if(_timer >= _waitTime)
+            _waitTimer += Time.deltaTime;
+
+            if (_waitTimer >= _customer.Brain.Patience)
             {
-                _customer.CancelQueue();
+                _customer.GetQueue().RemoveCustomer(_customer);
+                _customer.ChangeState(new LeavingState(_customer));
             }
         }
 
-        public void ExitState()
-        {
-            Debug.Log("Customer exit waiting state!");
-        }
+        public void ExitState() { }
     }
 }

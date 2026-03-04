@@ -2,9 +2,16 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using _Project.Core.Event;
+using Project.Systems.SaveLoad;
 
 namespace _Project.Systems.Game
 {
+    [Serializable]
+    public class EconomySaveData
+    {
+        public decimal Balance;
+    }
+
     public readonly struct EconomyTransactionCompleted
     {
         public readonly string TransactionId; // id của giao dịch
@@ -21,7 +28,7 @@ namespace _Project.Systems.Game
 
 
     // Hệ thống quản lý kinh tế trong game
-    public class EconomySystem : IManager
+    public class EconomySystem : IManager, ISaveable
     {
         private decimal _balance;
         private decimal _dailyRevenue;
@@ -43,6 +50,7 @@ namespace _Project.Systems.Game
         {
             _eventManager.Register<CheckoutCompleted>(OnTransactionCompleted);
             _eventManager.Register<CheckoutFailed>(OnTransactionFailed);
+            SaveLoadService.Instance.RegisterSaveData(this);
             await Task.CompletedTask;
             return true;
         }
@@ -68,6 +76,20 @@ namespace _Project.Systems.Game
         public void ResetDailyRevenue()
         {
             _dailyRevenue = 0;
+        }
+
+        public void SaveState(GameData gameData)
+        {
+            gameData.Economy ??= new EconomySaveData();
+            gameData.Economy.Balance = _balance;
+
+        }
+
+        public void LoadState(GameData gameData)
+        {
+            if(gameData.Economy == null)
+                return;
+            _balance = gameData.Economy.Balance;
         }
     }
 }

@@ -13,23 +13,18 @@ namespace _Project.Gameplay.Customer
 
         public void EnterState()
         {
-            Debug.Log("Customer enter move to checkout counter state!");
-            _customer.Movement.MoveTo(_customer.GetCheckoutPosition());
-        }
-
-        public void ExitState()
-        {
-            Debug.Log("Customer exit move to checkout counter state!");
+            var pos = _customer.GetCheckout().GetCheckoutPosition();
+            _customer.Movement.MoveTo(pos);
         }
 
         public void UpdateState()
         {
-            if(_customer == null) return;
-            // Check if the customer has reached the checkout counter, if so, change the state to paying state
-            if(_customer.Movement.HasReachDestination)
+            if (_customer.Movement.HasReachDestination)
             {
-                _customer.OnReachedCheckout();
+                _customer.ChangeState(new PayingState(_customer));
             }
         }
+
+        public void ExitState() { }
     }
 }

@@ -1,20 +1,36 @@
 using System.Linq;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Project.Systems.SaveLoad;
 
 namespace _Project.Systems.Game
 {
     public class ShelfController : MonoBehaviour
     {
         [SerializeField] private List<ShelfPoint> shelfPoints;
+        [SerializeField] private string shelfID;
+
+        public string ShelfID => shelfID;
 
         private void Awake()
         {
+            shelfID = string.IsNullOrEmpty(shelfID) ? System.Guid.NewGuid().ToString() : gameObject.name;
             // If no shelf points are assigned in the inspector, automatically populate the list with child ShelfPoint components
             if (shelfPoints == null || shelfPoints.Count == 0)
             {
                 shelfPoints = GetComponentsInChildren<ShelfPoint>().ToList();
             }
+        }
+
+        private async void Start()
+        {
+            await Task.Yield();
+            if(!ServiceRegistry.TryGet<ShelfService>(out var shelfService))
+            {
+                await Task.Yield();
+            }
+            shelfService?.RegisterShelf(this);
         }
 
         // Tries to place an item on the shelf.
@@ -49,6 +65,32 @@ namespace _Project.Systems.Game
             }
             // If no shelf point can accept the item, return false
             return false;
+        }
+
+        public void LoadFromData(ShelfSaveData data)
+        {
+            var points = GetAllShelfPoints().ToList();
+            for(int i = 0; i < points.Count; i++)
+            {
+                var point = points[i];
+                var pointData = data.shelfPoints[i];
+                
+                while(!point.IsEmpty)
+                {
+                    point.RemoveOne();
+                }
+
+                if(string.IsNullOrEmpty(pointData.itemID))
+                    continue;
+
+                var item = ItemDictionary.Instance.GetById(pointData.itemID);
+                point.Init(item);
+                point.SetPrice(pointData.price);
+                for(int q = 0; q < pointData.quantity; q++)
+                {
+                    point.AddOne();
+                }
+            }
         }
 
         public IEnumerable<ShelfPoint> GetAllShelfPoints()
