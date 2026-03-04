@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 1303869121318198942}
   - component: {fileID: 1303869121318198913}
   m_Layer: 0
-  m_Name: normal man a
+  m_Name: Customer_one
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -2,10 +2,11 @@
 using UnityEngine;
 using UnityEngine.UI;
 using System.Threading.Tasks;
+using _Project.Core.Singleton;
 
 namespace _Project.Core.SceneManagement
 {
-    public class SceneLoader : MonoBehaviour
+    public class SceneLoader : PersistentSingleton<SceneLoader>
     {
         [SerializeField] private Image loadingBar;
         [SerializeField] private Canvas loadingCanvas;
@@ -20,7 +21,7 @@ namespace _Project.Core.SceneManagement
         
         private readonly SceneGroupController _sceneGroupController =  new SceneGroupController();
 
-        private void Awake()
+        private void Start()
         {
             _sceneGroupController.OnSceneLoaded += sceneName => Debug.Log($"Loaded Scene: {sceneName}");
             _sceneGroupController.OnSceneUnloaded += sceneName => Debug.Log($"Unloaded Scene: {sceneName}");

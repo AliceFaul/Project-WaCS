@@ -8,37 +8,46 @@ namespace _Project.Core.Event
 {
     public class EventManager : PersistentSingleton<EventManager>, IManager
     {
-        private readonly Dictionary<string, Action> _eventListeners =  new Dictionary<string, Action>();
-        
+        private readonly Dictionary<Type, Delegate> _eventListener = new();
+
         public async Task<bool> InitAsync()
         {
+            _eventListener.Clear();
             await Task.CompletedTask;
             return true;
         }
-        
-        public void Register(string eventName, Action listener)
+
+        public void Register<T>(Action<T> listener)
         {
-            _eventListeners.TryAdd(eventName, null);
-            _eventListeners[eventName] += listener;
-            Debug.Log($"[EventManager] registered {eventName}");
+            var type = typeof(T);
+            if(_eventListener.TryGetValue(type, out var existing))
+            {
+                _eventListener[type] = (Action<T>)existing + listener;
+            }
+            else
+            {
+                _eventListener[type] = listener;
+            }
         }
 
-        public void Unregister(string eventName, Action listener)
+        public void Unregister<T>(Action<T> listener)
         {
-            if (_eventListeners.ContainsKey(eventName))
+            var type = typeof(T);
+            if(_eventListener.TryGetValue(type, out var existing))
             {
-                _eventListeners[eventName] -= listener;
+                var current = (Action<T>)existing - listener;
+                if(current == null)
+                    _eventListener.Remove(type);
+                else
+                    _eventListener[type] = current;
             }
-            Debug.Log("[EventManager] unregistered " + eventName);
         }
 
-        public void Trigger(string eventName)
+        public void Publish<T>(T eventData)
         {
-            if (_eventListeners.TryGetValue(eventName, out var listener))
-            {
-                listener?.Invoke();
-            }
-            Debug.Log($"[EventManager] triggered {eventName}");
+            var type = typeof(T);
+            if(_eventListener.TryGetValue(type, out var del))
+                ((Action<T>)del)?.Invoke(eventData);
         }
     }
 }
