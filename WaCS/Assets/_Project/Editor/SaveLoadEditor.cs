@@ -11,6 +11,7 @@ public class SaveLoadEditor : Editor
     public override void OnInspectorGUI()
     {
         SaveLoadService service = (SaveLoadService)target;
+        string gameName = service.CurrentGameData != null ? service.CurrentGameData.Name : "DefaultSave";
 
         DrawDefaultInspector();
 
