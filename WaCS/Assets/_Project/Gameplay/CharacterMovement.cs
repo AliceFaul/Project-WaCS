@@ -1,5 +1,4 @@
-﻿using Project.Systems.Game;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace _Project.Gameplay
 {
@@ -28,8 +27,6 @@ namespace _Project.Gameplay
 
         public void Move(Vector2 input)
         {
-            if(PauseSystem.IsPaused) return;
-
             float targetSpeed = moveSpeed;
             if(input == Vector2.zero) targetSpeed = 0;
             Vector3 inputDirection = new Vector3(input.x, 0, input.y).normalized;

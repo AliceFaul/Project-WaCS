@@ -32,15 +32,6 @@ namespace _Project.Gameplay.Player
                         _currentInteractable.Interact(_playerContext);
                     }
                 }
-                // note: refactor secondary interact to use different input, currently using the same interact input for testing
-                if (_playerContext.Input.SecondaryInteract && _currentInteractable != null)
-                {
-                    if (_currentInteractable is ISecondaryInteractable secondary &&
-                        secondary.CanSecondaryInteract(_playerContext))
-                    {
-                        secondary.SecondaryInteract(_playerContext);
-                    }
-                }
             }
             else
             {
@@ -48,6 +39,7 @@ namespace _Project.Gameplay.Player
             }
         }
         
+        // note: refactor detect by mouse
         private void DetectInteraction()
         {
             _currentInteractable = null;
