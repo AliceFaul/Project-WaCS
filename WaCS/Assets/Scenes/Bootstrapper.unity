@@ -148,6 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ef19dc1579f4b4694ceca5a2a00ae24, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Core.SceneManagement.SceneLoader
+  unparentOnAwake: 1
   loadingBar: {fileID: 371210600}
   loadingCanvas: {fileID: 430632796}
   loadingCanvasGroup: {fileID: 430632795}
@@ -478,8 +479,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.Core.SceneManagement.Bootstrapper
   itemDictionary: {fileID: 11400000, guid: 6a4e8d3249f39f4468aefa8c852b19a6, type: 2}
-  loadExistingSave: 1
+  loadExistingSave: 0
   saveFileName: DefaultSave
+  audioDictionary: {fileID: 11400000, guid: 2b192162f2e81b44ca4b6c74c08392fb, type: 2}
 --- !u!4 &637211770
 Transform:
   m_ObjectHideFlags: 0
@@ -645,7 +647,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1429448583}
   - component: {fileID: 1429448582}
-  - component: {fileID: 1429448581}
   - component: {fileID: 1429448584}
   m_Layer: 0
   m_Name: LoadingCamera
@@ -654,14 +655,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &1429448581
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1429448580}
-  m_Enabled: 1
 --- !u!20 &1429448582
 Camera:
   m_ObjectHideFlags: 0

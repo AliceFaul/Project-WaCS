@@ -12,6 +12,7 @@ namespace _Project.Gameplay.Player
         
         [SerializeField] private PlayerInteraction interaction;
 
+        public static event Action OnContextInitialized;
         public event Action<bool> OnInventoryToggled;
         private bool _inventoryOpen = false;
 
@@ -29,6 +30,7 @@ namespace _Project.Gameplay.Player
             }
 
             Context = new PlayerContext(this);
+            OnContextInitialized?.Invoke();
             ServiceRegistry.Register(Context);
             SaveLoadService.Instance.RegisterSaveData(Context);
             Context.StateMachine.ChangeState(new  PlayerIdleState(this));

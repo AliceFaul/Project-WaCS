@@ -16,6 +16,6 @@ MonoBehaviour:
   DisplayName: Test
   Prefab: {fileID: 4248656965856329395, guid: 6012fccf4ebae9e4cb47349aa82f193d, type: 3}
   MaxStackSize: 24
-  Icon: {fileID: 0}
-  BuyPrice: 0
-  SellPrice: 0
+  Icon: {fileID: 21300000, guid: a0cd4c63975a9d347b9a514bda782aae, type: 3}
+  BuyPrice: 10
+  SellPrice: 15

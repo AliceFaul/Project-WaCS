@@ -305,7 +305,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fffad3a8aeced18489e165969099e6ed, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::_Project.UI.Animations.TweenHelper
-  config: {fileID: 11400000, guid: 2b192162f2e81b44ca4b6c74c08392fb, type: 2}
+  config: {fileID: 11400000, guid: cf2da499abbc6b14c8c543ac9114791e, type: 2}
 --- !u!4 &202232939
 Transform:
   m_ObjectHideFlags: 0
@@ -2553,7 +2553,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 4d082aadace76444686af5da79df04e8, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 3df164b4ebc68e447b4d331f0f042202, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
